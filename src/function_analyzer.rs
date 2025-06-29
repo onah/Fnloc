@@ -1,4 +1,4 @@
-use crate::function_extractor::{extract_function_spans, read_rust_file, FunctionSpan};
+use crate::function_extractor::{FunctionSpan, extract_function_spans, read_rust_file};
 
 /// Result of analyzing a function's line composition
 #[derive(Debug, Clone)]
