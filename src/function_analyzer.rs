@@ -45,8 +45,5 @@ pub fn analyze_file_functions(path: &str) -> Vec<FunctionAnalysisResult> {
     let source = read_rust_file(path);
     let function_spans = extract_function_spans(&source);
 
-    function_spans
-        .iter()
-        .map(|f| analyze_function_lines(f))
-        .collect()
+    function_spans.iter().map(analyze_function_lines).collect()
 }
