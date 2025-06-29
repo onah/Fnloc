@@ -8,8 +8,6 @@ pub struct FunctionAnalysisResult {
     pub code: usize,
     pub comment: usize,
     pub empty: usize,
-    pub start_line: usize,
-    pub end_line: usize,
 }
 
 /// Analyzes the line composition of a function span
@@ -35,8 +33,6 @@ pub fn analyze_function_lines(func: &FunctionSpan) -> FunctionAnalysisResult {
         code,
         comment,
         empty,
-        start_line: func.start_line,
-        end_line: func.end_line,
     }
 }
 

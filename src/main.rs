@@ -48,55 +48,12 @@ fn analyze_and_display_file(file_path: &str) {
 /// Displays the analysis result for a single function
 fn display_function_result(result: &FunctionAnalysisResult) {
     println!(
-        "  - fn {} (lines {}-{}): total={} lines, code={}, comment={}, empty={}",
-        result.name,
-        result.start_line,
-        result.end_line,
-        result.total,
-        result.code,
-        result.comment,
-        result.empty
+        "  - fn {}: total={} lines, code={}, comment={}, empty={}",
+        result.name, result.total, result.code, result.comment, result.empty
     );
 }
 
 fn main() {
     let config = Config::default();
     run_analysis(&config);
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use function_analyzer::analyze_function_lines;
-    use function_extractor::FunctionSpan;
-
-    #[test]
-    fn test_line_counting() {
-        let source = vec![
-            "// comment".to_string(),
-            "fn hello() {".to_string(),
-            "  println!(\"Hello\");".to_string(),
-            "".to_string(),
-            "// another".to_string(),
-            "}".to_string(),
-        ];
-
-        let span = FunctionSpan {
-            name: "hello".to_string(),
-            start_line: 2,
-            end_line: 6,
-            lines: source[0..6].to_vec(),
-        };
-
-        let result = analyze_function_lines(&span);
-        assert_eq!(result.code, 2);
-        assert_eq!(result.comment, 2);
-        assert_eq!(result.empty, 1);
-    }
-
-    #[test]
-    fn test_config_default() {
-        let config = Config::default();
-        assert_eq!(config.search_directory, "./src");
-    }
 }

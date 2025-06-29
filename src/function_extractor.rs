@@ -4,8 +4,6 @@ use syn::Item;
 /// Represents a span of lines that contain a function
 pub struct FunctionSpan {
     pub name: String,
-    pub start_line: usize, // 1-based
-    pub end_line: usize,   // inclusive, 1-based
     pub lines: Vec<String>,
 }
 
@@ -29,12 +27,7 @@ pub fn extract_function_spans(source: &str) -> Vec<FunctionSpan> {
             if let Some((start, end)) = find_function_bounds(&lines, &name) {
                 let slice: Vec<String> = lines[start..=end].iter().map(|s| s.to_string()).collect();
 
-                spans.push(FunctionSpan {
-                    name,
-                    start_line: start + 1,
-                    end_line: end + 1,
-                    lines: slice,
-                });
+                spans.push(FunctionSpan { name, lines: slice });
             }
         }
     }
