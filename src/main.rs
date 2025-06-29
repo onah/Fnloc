@@ -3,7 +3,7 @@ mod function_analyzer;
 mod function_extractor;
 
 use file_scanner::find_rust_files;
-use function_analyzer::{FunctionAnalysisResult, analyze_file_functions};
+use function_analyzer::{FunctionAnalysisResult, analyze_all_files_sorted_by_code};
 
 /// Configuration for the analysis
 struct Config {
@@ -30,17 +30,12 @@ fn run_analysis(config: &Config) {
         return;
     }
 
-    for file in files {
-        analyze_and_display_file(&file);
-    }
-}
+    println!("Analyzing {} Rust files...\n", files.len());
 
-/// Analyzes a single file and displays the results
-fn analyze_and_display_file(file_path: &str) {
-    println!("{}", file_path);
-    let results = analyze_file_functions(file_path);
+    // Analyze all functions across all files and sort by code size
+    let all_results = analyze_all_files_sorted_by_code(&files);
 
-    for result in results {
+    for result in all_results {
         display_function_result(&result);
     }
 }

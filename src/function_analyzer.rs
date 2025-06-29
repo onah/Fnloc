@@ -43,3 +43,22 @@ pub fn analyze_file_functions(path: &str) -> Vec<FunctionAnalysisResult> {
 
     function_spans.iter().map(analyze_function_lines).collect()
 }
+
+/// Analyzes all functions across multiple files and returns results sorted by code lines
+pub fn analyze_all_files_sorted_by_code(file_paths: &[String]) -> Vec<FunctionAnalysisResult> {
+    let mut all_results = Vec::new();
+
+    for path in file_paths {
+        let mut file_results = analyze_file_functions(path);
+        // Add file path information to each result for context
+        for result in &mut file_results {
+            // We'll modify the name to include the file path
+            result.name = format!("{}::{}", path, result.name);
+        }
+        all_results.extend(file_results);
+    }
+
+    // Sort all functions by code lines in descending order
+    all_results.sort_by(|a, b| b.code.cmp(&a.code));
+    all_results
+}
