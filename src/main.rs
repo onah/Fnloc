@@ -23,7 +23,14 @@ impl Default for Config {
 /// Runs the function analysis for all Rust files in the configured directory
 fn run_analysis(config: &Config) {
     let formatter = OutputFormatter::new();
-    let files = find_rust_files(&config.search_directory);
+
+    let files = match find_rust_files(&config.search_directory) {
+        Ok(files) => files,
+        Err(e) => {
+            eprintln!("Error scanning for Rust files: {}", e);
+            return;
+        }
+    };
 
     if files.is_empty() {
         formatter.display_no_files_message(&config.search_directory);
@@ -39,6 +46,13 @@ fn run_analysis(config: &Config) {
 }
 
 fn main() {
-    let config = Config::default();
+    let args: Vec<String> = std::env::args().collect();
+    let search_directory = if args.len() > 1 {
+        args[1].clone()
+    } else {
+        "./src".to_string()
+    };
+
+    let config = Config { search_directory };
     run_analysis(&config);
 }
