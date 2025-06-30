@@ -62,3 +62,173 @@ pub fn analyze_all_files_sorted_by_code(file_paths: &[String]) -> Vec<FunctionAn
     all_results.sort_by(|a, b| b.code.cmp(&a.code));
     all_results
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::function_extractor::FunctionSpan;
+
+    /// Helper function to create a FunctionSpan for testing
+    fn create_test_function_span(name: &str, lines: Vec<&str>) -> FunctionSpan {
+        FunctionSpan {
+            name: name.to_string(),
+            lines: lines.iter().map(|s| s.to_string()).collect(),
+        }
+    }
+
+    #[test]
+    fn test_analyze_function_lines_code_only() {
+        let func_span = create_test_function_span(
+            "test_function",
+            vec![
+                "fn test_function() {",
+                "    let x = 5;",
+                "    let y = 10;",
+                "    x + y",
+                "}",
+            ],
+        );
+
+        let result = analyze_function_lines(&func_span);
+
+        assert_eq!(result.name, "test_function");
+        assert_eq!(result.total, 5);
+        assert_eq!(result.code, 5);
+        assert_eq!(result.comment, 0);
+        assert_eq!(result.empty, 0);
+    }
+
+    #[test]
+    fn test_analyze_function_lines_mixed_content() {
+        let func_span = create_test_function_span(
+            "mixed_function",
+            vec![
+                "fn mixed_function() {",
+                "    // This is a comment",
+                "    let x = 5;",
+                "",
+                "    /* Block comment */",
+                "    let y = 10;",
+                "",
+                "    x + y",
+                "}",
+            ],
+        );
+
+        let result = analyze_function_lines(&func_span);
+
+        assert_eq!(result.name, "mixed_function");
+        assert_eq!(result.total, 9);
+        assert_eq!(result.code, 5); // function signature, 2 let statements, expression, closing brace
+        assert_eq!(result.comment, 2); // single line and block comment
+        assert_eq!(result.empty, 2); // two empty lines
+    }
+
+    #[test]
+    fn test_analyze_function_lines_whitespace_only_lines() {
+        let func_span = create_test_function_span(
+            "whitespace_function",
+            vec![
+                "fn whitespace_function() {",
+                "    let x = 5;",
+                "   ", // whitespace only - should be counted as empty
+                "\t\t", // tabs only - should be counted as empty
+                "    return x;",
+                "}",
+            ],
+        );
+
+        let result = analyze_function_lines(&func_span);
+
+        assert_eq!(result.name, "whitespace_function");
+        assert_eq!(result.total, 6);
+        assert_eq!(result.code, 4); // function signature, let statement, return, closing brace
+        assert_eq!(result.comment, 0);
+        assert_eq!(result.empty, 2); // two lines with only whitespace
+    }
+
+    #[test]
+    fn test_analyze_function_lines_different_comment_styles() {
+        let func_span = create_test_function_span(
+            "comment_styles_function",
+            vec![
+                "fn comment_styles_function() {",
+                "    // Single line comment",
+                "    /* Block comment on single line */",
+                "    let x = 5; // Inline comment is treated as code",
+                "    /*",
+                "     * Multi-line comment start",
+                "     */",
+                "}",
+            ],
+        );
+
+        let result = analyze_function_lines(&func_span);
+
+        assert_eq!(result.name, "comment_styles_function");
+        assert_eq!(result.total, 8);
+        assert_eq!(result.code, 5); // function signature, let statement, multi-line comment middle/end, closing brace
+        assert_eq!(result.comment, 3); // lines starting with "//" or "/*"
+        assert_eq!(result.empty, 0);
+    }
+
+    #[test]
+    fn test_analyze_function_lines_comments_and_empty_only() {
+        let func_span = create_test_function_span(
+            "comments_only_function",
+            vec![
+                "// This function has no actual code",
+                "/* Just comments and empty lines */",
+                "",
+                "// Another comment",
+                "",
+                "/* Final comment */",
+            ],
+        );
+
+        let result = analyze_function_lines(&func_span);
+
+        assert_eq!(result.name, "comments_only_function");
+        assert_eq!(result.total, 6);
+        assert_eq!(result.code, 0);
+        assert_eq!(result.comment, 4);
+        assert_eq!(result.empty, 2);
+    }
+
+    #[test]
+    fn test_analyze_function_lines_single_line_function() {
+        let func_span = create_test_function_span(
+            "single_line",
+            vec!["fn single_line() { 42 }"],
+        );
+
+        let result = analyze_function_lines(&func_span);
+
+        assert_eq!(result.name, "single_line");
+        assert_eq!(result.total, 1);
+        assert_eq!(result.code, 1);
+        assert_eq!(result.comment, 0);
+        assert_eq!(result.empty, 0);
+    }
+
+    #[test]
+    fn test_analyze_function_lines_empty_function() {
+        let func_span = create_test_function_span(
+            "empty_function",
+            vec![
+                "fn empty_function() {",
+                "",
+                "",
+                "}",
+            ],
+        );
+
+        let result = analyze_function_lines(&func_span);
+
+        assert_eq!(result.name, "empty_function");
+        assert_eq!(result.total, 4);
+        assert_eq!(result.code, 2); // function signature and closing brace
+        assert_eq!(result.comment, 0);
+        assert_eq!(result.empty, 2);
+    }
+}
