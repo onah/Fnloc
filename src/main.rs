@@ -4,7 +4,7 @@ mod function_extractor;
 mod output_formatter;
 
 use file_scanner::find_rust_files;
-use function_analyzer::analyze_all_files_sorted_by_code;
+use function_analyzer::analyze_all_files;
 use output_formatter::OutputFormatter;
 
 /// Configuration for the analysis
@@ -29,13 +29,13 @@ fn run_analysis(config: &Config) {
         formatter.display_no_files_message(&config.search_directory);
         return;
     }
-
     formatter.display_analysis_header(files.len());
 
-    // Analyze all functions across all files and sort by code size
-    let all_results = analyze_all_files_sorted_by_code(&files);
+    // Analyze all functions across all files
+    let all_results = analyze_all_files(&files);
 
-    formatter.display_results(&all_results);
+    // Display results sorted by code size
+    formatter.display_results_sorted_by_code(&all_results);
 }
 
 fn main() {

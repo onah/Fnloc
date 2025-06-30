@@ -14,10 +14,13 @@ impl OutputFormatter {
         println!("Analyzing {} Rust files...\n", file_count);
     }
 
-    /// Displays all analysis results in a formatted manner
-    pub fn display_results(&self, results: &[FunctionAnalysisResult]) {
-        for result in results {
-            self.display_function_result(result);
+    /// Displays all analysis results sorted by code lines in descending order
+    pub fn display_results_sorted_by_code(&self, results: &[FunctionAnalysisResult]) {
+        let mut sorted_results = results.to_vec();
+        sorted_results.sort_by(|a, b| b.code.cmp(&a.code));
+
+        for result in sorted_results {
+            self.display_function_result(&result);
         }
     }
 
