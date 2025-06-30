@@ -31,11 +31,6 @@ impl OutputFormatter {
             result.name, result.total, result.code, result.comment, result.empty
         );
     }
-
-    /// Displays a message when no files are found
-    pub fn display_no_files_message(&self, directory: &str) {
-        println!("No Rust files found in directory: {}", directory);
-    }
 }
 
 impl Default for OutputFormatter {

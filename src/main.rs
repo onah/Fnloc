@@ -2,6 +2,7 @@ mod file_scanner;
 mod function_analyzer;
 mod function_extractor;
 mod output_formatter;
+mod errors;
 
 use file_scanner::find_rust_files;
 use function_analyzer::analyze_all_files;
@@ -27,15 +28,11 @@ fn run_analysis(config: &Config) {
     let files = match find_rust_files(&config.search_directory) {
         Ok(files) => files,
         Err(e) => {
-            eprintln!("Error scanning for Rust files: {}", e);
+            eprintln!("Error: {}", e);
             return;
         }
     };
 
-    if files.is_empty() {
-        formatter.display_no_files_message(&config.search_directory);
-        return;
-    }
     formatter.display_analysis_header(files.len());
 
     // Analyze all functions across all files
