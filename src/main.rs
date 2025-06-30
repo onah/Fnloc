@@ -1,8 +1,8 @@
+mod errors;
 mod file_scanner;
 mod function_analyzer;
 mod function_extractor;
 mod output_formatter;
-mod errors;
 
 use file_scanner::find_rust_files;
 use function_analyzer::analyze_all_files;

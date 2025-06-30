@@ -1,5 +1,5 @@
-use walkdir::WalkDir;
 use crate::errors::{AnalysisError, AnalysisResult};
+use walkdir::WalkDir;
 
 /// Recursively finds all Rust files in a directory using walkdir
 /// Returns a Result containing the list of Rust file paths or an error
@@ -13,7 +13,10 @@ pub fn find_rust_files(dir: &str) -> AnalysisResult<Vec<String>> {
                     directory: dir.to_string(),
                 }
             } else {
-                AnalysisError::Io(std::io::Error::other(format!("Error reading directory entry: {}", e)))
+                AnalysisError::Io(std::io::Error::other(format!(
+                    "Error reading directory entry: {}",
+                    e
+                )))
             }
         })?;
 
