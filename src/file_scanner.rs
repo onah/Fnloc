@@ -1,32 +1,17 @@
-use std::fs;
-use std::path::Path;
+use walkdir::WalkDir;
 
-/// Recursively finds all Rust files in a directory
+/// Recursively finds all Rust files in a directory using walkdir
 pub fn find_rust_files(dir: &str) -> Vec<String> {
-    let mut rust_files = Vec::new();
-
-    fn visit_dir(dir: &Path, files: &mut Vec<String>) -> std::io::Result<()> {
-        if dir.is_dir() {
-            for entry in fs::read_dir(dir)? {
-                let entry = entry?;
-                let path = entry.path();
-                if path.is_dir() {
-                    visit_dir(&path, files)?;
-                } else if let Some(extension) = path.extension() {
-                    if extension == "rs" {
-                        if let Some(path_str) = path.to_str() {
-                            files.push(path_str.to_string());
-                        }
-                    }
-                }
+    WalkDir::new(dir)
+        .into_iter()
+        .filter_map(|entry| match entry {
+            Ok(entry) => Some(entry),
+            Err(e) => {
+                eprintln!("Error reading directory entry: {}", e);
+                None
             }
-        }
-        Ok(())
-    }
-
-    if let Err(e) = visit_dir(Path::new(dir), &mut rust_files) {
-        eprintln!("Error reading directory {}: {}", dir, e);
-    }
-
-    rust_files
+        })
+        .filter(|entry| entry.path().extension().is_some_and(|ext| ext == "rs"))
+        .filter_map(|entry| entry.path().to_str().map(|s| s.to_string()))
+        .collect()
 }
