@@ -1,9 +1,11 @@
 mod file_scanner;
 mod function_analyzer;
 mod function_extractor;
+mod output_formatter;
 
 use file_scanner::find_rust_files;
-use function_analyzer::{FunctionAnalysisResult, analyze_all_files_sorted_by_code};
+use function_analyzer::analyze_all_files_sorted_by_code;
+use output_formatter::OutputFormatter;
 
 /// Configuration for the analysis
 struct Config {
@@ -20,32 +22,20 @@ impl Default for Config {
 
 /// Runs the function analysis for all Rust files in the configured directory
 fn run_analysis(config: &Config) {
+    let formatter = OutputFormatter::new();
     let files = find_rust_files(&config.search_directory);
 
     if files.is_empty() {
-        println!(
-            "No Rust files found in directory: {}",
-            config.search_directory
-        );
+        formatter.display_no_files_message(&config.search_directory);
         return;
     }
 
-    println!("Analyzing {} Rust files...\n", files.len());
+    formatter.display_analysis_header(files.len());
 
     // Analyze all functions across all files and sort by code size
     let all_results = analyze_all_files_sorted_by_code(&files);
 
-    for result in all_results {
-        display_function_result(&result);
-    }
-}
-
-/// Displays the analysis result for a single function
-fn display_function_result(result: &FunctionAnalysisResult) {
-    println!(
-        "  - fn {}: total={} lines, code={}, comment={}, empty={}",
-        result.name, result.total, result.code, result.comment, result.empty
-    );
+    formatter.display_results(&all_results);
 }
 
 fn main() {
