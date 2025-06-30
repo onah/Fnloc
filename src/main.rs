@@ -1,31 +1,32 @@
+mod cli;
 mod errors;
 mod file_scanner;
 mod function_analyzer;
 mod function_extractor;
 mod output_formatter;
 
+use clap::Parser;
+use cli::{Cli, SortBy};
 use file_scanner::find_rust_files;
 use function_analyzer::analyze_all_files;
 use output_formatter::OutputFormatter;
 
-/// Configuration for the analysis
-struct Config {
-    pub search_directory: String,
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            search_directory: "./src".to_string(),
-        }
-    }
-}
-
 /// Runs the function analysis for all Rust files in the configured directory
-fn run_analysis(config: &Config) {
+fn run_analysis(cli: &Cli) {
     let formatter = OutputFormatter::new();
 
-    let files = match find_rust_files(&config.search_directory) {
+    if cli.verbose {
+        println!("Analyzing directory: {}", cli.directory);
+        println!("Minimum lines filter: {}", cli.min_lines);
+        if let Some(limit) = cli.limit {
+            println!("Display limit: {}", limit);
+        }
+        println!("Sort by: {:?}", cli.sort);
+        println!("Output format: {:?}", cli.format);
+        println!();
+    }
+
+    let files = match find_rust_files(&cli.directory) {
         Ok(files) => files,
         Err(e) => {
             eprintln!("Error: {}", e);
@@ -33,23 +34,45 @@ fn run_analysis(config: &Config) {
         }
     };
 
+    if cli.verbose {
+        println!("Found {} Rust files", files.len());
+    }
+
     formatter.display_analysis_header(files.len());
 
     // Analyze all functions across all files
     let all_results = analyze_all_files(&files);
 
-    // Display results sorted by code size
-    formatter.display_results_sorted_by_code(&all_results);
+    // Filter results based on minimum lines
+    let filtered_results: Vec<_> = all_results
+        .into_iter()
+        .filter(|result| result.total >= cli.min_lines)
+        .collect();
+
+    // Apply limit if specified
+    let limited_results = if let Some(limit) = cli.limit {
+        filtered_results.into_iter().take(limit).collect()
+    } else {
+        filtered_results
+    };
+
+    // Display results sorted by specified criteria
+    match cli.sort {
+        SortBy::Total | SortBy::Code => {
+            formatter.display_results_sorted_by_code(&limited_results);
+        }
+        SortBy::Comments => {
+            // TODO: Implement comment-based sorting
+            formatter.display_results_sorted_by_code(&limited_results);
+        }
+        SortBy::Name => {
+            // TODO: Implement name-based sorting
+            formatter.display_results_sorted_by_code(&limited_results);
+        }
+    }
 }
 
 fn main() {
-    let args: Vec<String> = std::env::args().collect();
-    let search_directory = if args.len() > 1 {
-        args[1].clone()
-    } else {
-        "./src".to_string()
-    };
-
-    let config = Config { search_directory };
-    run_analysis(&config);
+    let cli = Cli::parse();
+    run_analysis(&cli);
 }

@@ -7,3 +7,4 @@ edition = "2024"
 syn = { version = "2.0.104", features = ["full"] }
 walkdir = "2.4"
 thiserror = "1.0"
+clap = { version = "4.5", features = ["derive"] }
