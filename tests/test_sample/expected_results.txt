@@ -1,0 +1,12 @@
+# Expected test results for sample.rs and module.rs
+# Format: function_name, total_lines, code_lines, comment_lines, empty_lines
+
+# sample.rs functions
+simple_function, 3, 3, 0, 0
+complex_function, 18, 12, 3, 3
+empty_function, 2, 2, 0, 0
+comment_heavy_function, 8, 3, 4, 1
+large_function, 27, 15, 8, 4
+
+# module.rs functions  
+divide_numbers, 7, 7, 0, 0

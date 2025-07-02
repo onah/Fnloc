@@ -30,7 +30,7 @@ fn run_analysis(cli: &Cli) {
         Ok(files) => files,
         Err(e) => {
             eprintln!("Error: {}", e);
-            return;
+            std::process::exit(1);
         }
     };
 
