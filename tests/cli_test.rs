@@ -33,33 +33,18 @@ fn test_cli_version() {
 }
 
 #[test]
-fn test_cli_min_lines_filter() {
-    let (stdout, _stderr, success) = run_fnloc(&["tests/test_sample", "--min-lines", "10"])
-        .expect("Failed to run fnloc with min-lines filter");
+fn test_cli_help() {
+    let (stdout, _stderr, success) = run_fnloc(&["--help"]).expect("Failed to run fnloc --help");
 
-    assert!(success, "Min-lines filter should succeed");
-
-    // Parse output to verify filtering
-    let lines: Vec<&str> = stdout.lines().collect();
-    let function_lines: Vec<&str> = lines
-        .iter()
-        .filter(|line| line.trim().starts_with("- fn"))
-        .copied()
-        .collect();
-
-    // Verify that all displayed functions have at least 10 lines
-    for line in function_lines {
-        if let Some(total_part) = line.split("total=").nth(1) {
-            if let Some(total_str) = total_part.split(" lines").next() {
-                let total: usize = total_str.parse().expect("Failed to parse total lines");
-                assert!(
-                    total >= 10,
-                    "Function should have at least 10 lines: {}",
-                    line
-                );
-            }
-        }
-    }
+    assert!(success, "Help command should succeed");
+    assert!(
+        stdout.contains("Analyzes Rust functions"),
+        "Help should contain description"
+    );
+    assert!(
+        stdout.contains("--format"),
+        "Help should contain format option"
+    );
 }
 
 #[test]
@@ -85,4 +70,24 @@ fn test_cli_default_behavior() {
     assert!(success, "Default behavior should succeed");
     assert!(stdout.contains("Analyzing"), "Should show analysis header");
     assert!(stdout.contains("fn"), "Should show function results");
+}
+
+#[test]
+fn test_cli_with_test_sample() {
+    // Test with test sample directory
+    let (stdout, _stderr, success) =
+        run_fnloc(&["tests/test_sample"]).expect("Failed to run fnloc with test sample");
+
+    assert!(success, "Should succeed with test sample directory");
+    assert!(stdout.contains("Analyzing"), "Should show analysis header");
+    assert!(stdout.contains("fn"), "Should show function results");
+    assert!(
+        stdout.contains("large_function"),
+        "Should show sample functions"
+    );
+    assert!(
+        stdout.contains("complexity="),
+        "Should show cyclomatic complexity"
+    );
+    assert!(stdout.contains("nesting="), "Should show nesting depth");
 }

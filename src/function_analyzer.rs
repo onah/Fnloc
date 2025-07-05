@@ -1,6 +1,8 @@
+use crate::complexity_analyzer::{calculate_cyclomatic_complexity, calculate_nesting_depth};
 use crate::function_extractor::{FunctionSpan, extract_function_spans, read_rust_file};
+use syn::{Item, parse_file};
 
-/// Result of analyzing a function's line composition
+/// Result of analyzing a function's line composition, complexity, and nesting
 #[derive(Debug, Clone)]
 pub struct FunctionAnalysisResult {
     pub name: String,
@@ -8,10 +10,12 @@ pub struct FunctionAnalysisResult {
     pub code: usize,
     pub comment: usize,
     pub empty: usize,
+    pub cyclomatic_complexity: usize,
+    pub nesting_depth: usize,
 }
 
-/// Analyzes the line composition of a function span
-pub fn analyze_function_lines(func: &FunctionSpan) -> FunctionAnalysisResult {
+/// Analyzes the line composition, cyclomatic complexity, and nesting depth of a function span
+pub fn analyze_function_lines(func: &FunctionSpan, source: &str) -> FunctionAnalysisResult {
     let mut code = 0;
     let mut comment = 0;
     let mut empty = 0;
@@ -27,13 +31,38 @@ pub fn analyze_function_lines(func: &FunctionSpan) -> FunctionAnalysisResult {
         }
     }
 
+    // Calculate cyclomatic complexity and nesting depth by parsing the source and finding the function
+    let (cyclomatic_complexity, nesting_depth) = calculate_function_metrics(source, &func.name);
+
     FunctionAnalysisResult {
         name: func.name.clone(),
         total: func.lines.len(),
         code,
         comment,
         empty,
+        cyclomatic_complexity,
+        nesting_depth,
     }
+}
+
+/// Calculates both cyclomatic complexity and nesting depth for a specific function by name from source code
+fn calculate_function_metrics(source: &str, function_name: &str) -> (usize, usize) {
+    // Parse the source code into an AST
+    if let Ok(parsed) = parse_file(source) {
+        // Find the function by name and calculate its metrics
+        for item in parsed.items {
+            if let Item::Fn(func) = item {
+                if func.sig.ident.to_string() == function_name {
+                    let complexity = calculate_cyclomatic_complexity(&func);
+                    let nesting = calculate_nesting_depth(&func);
+                    return (complexity, nesting);
+                }
+            }
+        }
+    }
+
+    // Default values if parsing fails or function not found
+    (1, 0)
 }
 
 /// Analyzes all functions in a Rust file and returns analysis results
@@ -41,7 +70,10 @@ pub fn analyze_file_functions(path: &str) -> Vec<FunctionAnalysisResult> {
     let source = read_rust_file(path);
     let function_spans = extract_function_spans(&source);
 
-    function_spans.iter().map(analyze_function_lines).collect()
+    function_spans
+        .iter()
+        .map(|span| analyze_function_lines(span, &source))
+        .collect()
 }
 
 /// Analyzes all functions across multiple files and returns unsorted results
@@ -81,13 +113,16 @@ mod tests {
             lines,
         };
 
-        let result = analyze_function_lines(&span);
+        let source = "fn hello() {\n    println!(\"Hello\");\n    // This is a comment\n\n}";
+        let result = analyze_function_lines(&span, source);
 
         assert_eq!(result.name, "hello");
         assert_eq!(result.total, 5);
         assert_eq!(result.code, 3); // fn hello() {, println!, }
         assert_eq!(result.comment, 1); // // This is a comment
         assert_eq!(result.empty, 1); // empty line
+        assert_eq!(result.cyclomatic_complexity, 1); // Simple function
+        assert_eq!(result.nesting_depth, 0); // No nesting
     }
 
     #[test]
@@ -103,13 +138,16 @@ mod tests {
             lines,
         };
 
-        let result = analyze_function_lines(&span);
+        let source = "fn add(a: i32, b: i32) -> i32 {\n    a + b\n}";
+        let result = analyze_function_lines(&span, source);
 
         assert_eq!(result.name, "add");
         assert_eq!(result.total, 3);
         assert_eq!(result.code, 3);
         assert_eq!(result.comment, 0);
         assert_eq!(result.empty, 0);
+        assert_eq!(result.cyclomatic_complexity, 1); // Simple function
+        assert_eq!(result.nesting_depth, 0); // No nesting
     }
 
     #[test]
@@ -126,13 +164,18 @@ mod tests {
             lines,
         };
 
-        let result = analyze_function_lines(&span);
+        // For this test, the source doesn't contain the actual function,
+        // so complexity will default to 1
+        let source = "fn documented_function() {}";
+        let result = analyze_function_lines(&span, source);
 
         assert_eq!(result.name, "documented_function");
         assert_eq!(result.total, 4);
         assert_eq!(result.code, 1); // "   continues here */" doesn't start with // or /*
         assert_eq!(result.comment, 3);
         assert_eq!(result.empty, 0);
+        assert_eq!(result.cyclomatic_complexity, 1); // Simple function
+        assert_eq!(result.nesting_depth, 0); // No nesting
     }
 
     #[test]
@@ -149,13 +192,15 @@ mod tests {
             lines,
         };
 
-        let result = analyze_function_lines(&span);
+        let source = "fn empty_function() {\n\n\n}";
+        let result = analyze_function_lines(&span, source);
 
         assert_eq!(result.name, "empty_function");
         assert_eq!(result.total, 4);
         assert_eq!(result.code, 2); // fn declaration and closing brace
         assert_eq!(result.comment, 0);
         assert_eq!(result.empty, 2);
+        assert_eq!(result.cyclomatic_complexity, 1); // Simple function
     }
 
     #[test]
@@ -179,13 +224,15 @@ mod tests {
             lines,
         };
 
-        let result = analyze_function_lines(&span);
+        let source = "fn complex_function() {\n    // Initialize variables\n    let x = 10;\n\n    /* Calculate result\n       using complex logic */\n    let result = x * 2;\n\n    // Return the result\n    result\n}";
+        let result = analyze_function_lines(&span, source);
 
         assert_eq!(result.name, "complex_function");
         assert_eq!(result.total, 11);
         assert_eq!(result.code, 6); // fn declaration, let x, let result, result, }, and "using complex logic"
         assert_eq!(result.comment, 3); // Three lines starting with // or /*
         assert_eq!(result.empty, 2);
+        assert_eq!(result.cyclomatic_complexity, 1); // Simple function
     }
 
     #[test]
@@ -221,6 +268,8 @@ mod tests {
             code: 7,
             comment: 2,
             empty: 1,
+            cyclomatic_complexity: 3,
+            nesting_depth: 2,
         };
 
         assert_eq!(result.name, "test_function");
@@ -228,6 +277,8 @@ mod tests {
         assert_eq!(result.code, 7);
         assert_eq!(result.comment, 2);
         assert_eq!(result.empty, 1);
+        assert_eq!(result.cyclomatic_complexity, 3);
+        assert_eq!(result.nesting_depth, 2);
         assert_eq!(result.total, result.code + result.comment + result.empty);
     }
 
@@ -239,6 +290,8 @@ mod tests {
             code: 3,
             comment: 1,
             empty: 1,
+            cyclomatic_complexity: 2,
+            nesting_depth: 1,
         };
 
         let cloned = original.clone();
@@ -248,6 +301,8 @@ mod tests {
         assert_eq!(original.code, cloned.code);
         assert_eq!(original.comment, cloned.comment);
         assert_eq!(original.empty, cloned.empty);
+        assert_eq!(original.cyclomatic_complexity, cloned.cyclomatic_complexity);
+        assert_eq!(original.nesting_depth, cloned.nesting_depth);
     }
 
     #[test]
@@ -284,7 +339,8 @@ mod tests {
             lines,
         };
 
-        let result = analyze_function_lines(&span);
+        let source = "fn edge_case_function() {\n    // Comment with leading spaces\n\t/* Comment with tab */\n  \n\t\t\n    code_line();  // Inline comment\n    /*\n}";
+        let result = analyze_function_lines(&span, source);
 
         assert_eq!(result.name, "edge_case_function");
         assert_eq!(result.total, 6);
@@ -298,6 +354,7 @@ mod tests {
         assert_eq!(result.code, 1); // Only "code_line();" line
         assert_eq!(result.comment, 3); // Three lines starting with // or /*
         assert_eq!(result.empty, 2); // Lines with only whitespace
+        assert_eq!(result.cyclomatic_complexity, 1); // Simple function
     }
 
     #[test]
@@ -309,12 +366,122 @@ mod tests {
             lines,
         };
 
-        let result = analyze_function_lines(&span);
+        let source = "fn zero_lines() {}";
+        let result = analyze_function_lines(&span, source);
 
         assert_eq!(result.name, "zero_lines");
         assert_eq!(result.total, 0);
         assert_eq!(result.code, 0);
         assert_eq!(result.comment, 0);
         assert_eq!(result.empty, 0);
+        assert_eq!(result.cyclomatic_complexity, 1); // Simple function
+    }
+
+    #[test]
+    fn test_cyclomatic_complexity_simple_function() {
+        let lines = vec![
+            "fn simple() {".to_string(),
+            "    println!(\"Hello\");".to_string(),
+            "}".to_string(),
+        ];
+
+        let span = FunctionSpan {
+            name: "simple".to_string(),
+            lines,
+        };
+
+        let source = "fn simple() {\n    println!(\"Hello\");\n}";
+        let result = analyze_function_lines(&span, source);
+
+        assert_eq!(result.cyclomatic_complexity, 1);
+    }
+
+    #[test]
+    fn test_cyclomatic_complexity_with_if() {
+        let lines = vec![
+            "fn with_if(x: i32) {".to_string(),
+            "    if x > 0 {".to_string(),
+            "        println!(\"positive\");".to_string(),
+            "    }".to_string(),
+            "}".to_string(),
+        ];
+
+        let span = FunctionSpan {
+            name: "with_if".to_string(),
+            lines,
+        };
+
+        let source =
+            "fn with_if(x: i32) {\n    if x > 0 {\n        println!(\"positive\");\n    }\n}";
+        let result = analyze_function_lines(&span, source);
+
+        assert_eq!(result.cyclomatic_complexity, 2); // Base 1 + if 1
+    }
+
+    #[test]
+    fn test_cyclomatic_complexity_with_match() {
+        let lines = vec![
+            "fn with_match(x: Option<i32>) {".to_string(),
+            "    match x {".to_string(),
+            "        Some(val) => println!(\"{}\", val),".to_string(),
+            "        None => println!(\"nothing\"),".to_string(),
+            "    }".to_string(),
+            "}".to_string(),
+        ];
+
+        let span = FunctionSpan {
+            name: "with_match".to_string(),
+            lines,
+        };
+
+        let source = "fn with_match(x: Option<i32>) {\n    match x {\n        Some(val) => println!(\"{}\", val),\n        None => println!(\"nothing\"),\n    }\n}";
+        let result = analyze_function_lines(&span, source);
+
+        assert_eq!(result.cyclomatic_complexity, 4); // Base 1 + match 1 + 2 arms
+    }
+
+    #[test]
+    fn test_cyclomatic_complexity_with_loops() {
+        let lines = vec![
+            "fn with_loops() {".to_string(),
+            "    while true {".to_string(),
+            "        break;".to_string(),
+            "    }".to_string(),
+            "    for i in 0..10 {".to_string(),
+            "        continue;".to_string(),
+            "    }".to_string(),
+            "}".to_string(),
+        ];
+
+        let span = FunctionSpan {
+            name: "with_loops".to_string(),
+            lines,
+        };
+
+        let source = "fn with_loops() {\n    while true {\n        break;\n    }\n    for i in 0..10 {\n        continue;\n    }\n}";
+        let result = analyze_function_lines(&span, source);
+
+        assert_eq!(result.cyclomatic_complexity, 5); // Base 1 + while 1 + for 1 + break 1 + continue 1
+    }
+
+    #[test]
+    fn test_cyclomatic_complexity_with_logical_operators() {
+        let lines = vec![
+            "fn with_logical(a: bool, b: bool, c: bool) {".to_string(),
+            "    if a && b || c {".to_string(),
+            "        println!(\"complex condition\");".to_string(),
+            "    }".to_string(),
+            "}".to_string(),
+        ];
+
+        let span = FunctionSpan {
+            name: "with_logical".to_string(),
+            lines,
+        };
+
+        let source = "fn with_logical(a: bool, b: bool, c: bool) {\n    if a && b || c {\n        println!(\"complex condition\");\n    }\n}";
+        let result = analyze_function_lines(&span, source);
+
+        assert_eq!(result.cyclomatic_complexity, 4); // Base 1 + if 1 + && 1 + || 1
     }
 }

@@ -19,6 +19,8 @@ struct ExpectedResult {
     code: usize,
     comment: usize,
     empty: usize,
+    cyclomatic_complexity: usize,
+    nesting_depth: usize,
 }
 
 /// Parse expected results from the configuration file
@@ -36,13 +38,15 @@ fn parse_expected_results(
         }
 
         let parts: Vec<&str> = line.split(',').map(|s| s.trim()).collect();
-        if parts.len() == 5 {
+        if parts.len() == 7 {
             results.push(ExpectedResult {
                 name: parts[0].to_string(),
                 total: parts[1].parse()?,
                 code: parts[2].parse()?,
                 comment: parts[3].parse()?,
                 empty: parts[4].parse()?,
+                cyclomatic_complexity: parts[5].parse()?,
+                nesting_depth: parts[6].parse()?,
             });
         }
     }
@@ -127,6 +131,18 @@ fn test_sample_files_analysis() {
             actual.empty, expected.empty,
             "Empty lines mismatch for function '{}': expected {}, got {}",
             expected.name, expected.empty, actual.empty
+        );
+
+        assert_eq!(
+            actual.cyclomatic_complexity, expected.cyclomatic_complexity,
+            "Cyclomatic complexity mismatch for function '{}': expected {}, got {}",
+            expected.name, expected.cyclomatic_complexity, actual.cyclomatic_complexity
+        );
+
+        assert_eq!(
+            actual.nesting_depth, expected.nesting_depth,
+            "Nesting depth mismatch for function '{}': expected {}, got {}",
+            expected.name, expected.nesting_depth, actual.nesting_depth
         );
     }
 

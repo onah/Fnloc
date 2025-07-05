@@ -27,8 +27,14 @@ impl OutputFormatter {
     /// Displays the analysis result for a single function
     fn display_function_result(&self, result: &FunctionAnalysisResult) {
         println!(
-            "  - fn {}: total={} lines, code={}, comment={}, empty={}",
-            result.name, result.total, result.code, result.comment, result.empty
+            "  - fn {}: total={} lines, code={}, comment={}, empty={}, complexity={}, nesting={}",
+            result.name,
+            result.total,
+            result.code,
+            result.comment,
+            result.empty,
+            result.cyclomatic_complexity,
+            result.nesting_depth
         );
     }
 }

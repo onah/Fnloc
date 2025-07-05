@@ -1,12 +1,12 @@
 # Expected test results for sample.rs and module.rs
-# Format: function_name, total_lines, code_lines, comment_lines, empty_lines
+# Format: function_name, total_lines, code_lines, comment_lines, empty_lines, cyclomatic_complexity, nesting_depth
 
 # sample.rs functions
-simple_function, 3, 3, 0, 0
-complex_function, 14, 8, 3, 3
-empty_function, 1, 1, 0, 0
-comment_heavy_function, 8, 3, 4, 1
-large_function, 27, 15, 8, 4
+simple_function, 3, 3, 0, 0, 1, 0
+complex_function, 14, 8, 3, 3, 5, 2
+empty_function, 1, 1, 0, 0, 1, 0
+comment_heavy_function, 8, 3, 4, 1, 1, 0
+large_function, 27, 15, 8, 4, 5, 4
 
 # module.rs functions  
-divide_numbers, 7, 7, 0, 0
+divide_numbers, 7, 7, 0, 0, 2, 2

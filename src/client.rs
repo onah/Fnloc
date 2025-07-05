@@ -13,17 +13,6 @@ pub struct Client {
     #[arg(help = "Directory to scan for Rust files")]
     pub directory: String,
 
-    /// Show verbose output with additional information
-    #[arg(short, long)]
-    #[arg(help = "Enable verbose output")]
-    pub verbose: bool,
-
-    /// Minimum lines of code to display functions (filter small functions)
-    #[arg(short = 'm', long = "min-lines")]
-    #[arg(default_value = "0")]
-    #[arg(help = "Minimum lines of code to display functions")]
-    pub min_lines: usize,
-
     /// Output format
     #[arg(short = 'f', long = "format")]
     #[arg(value_enum)]

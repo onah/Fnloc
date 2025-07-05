@@ -4,6 +4,7 @@
 //! comments, and empty lines per function.
 
 pub mod client;
+pub mod complexity_analyzer;
 pub mod errors;
 pub mod file_scanner;
 pub mod function_analyzer;
@@ -24,13 +25,6 @@ use output_formatter::OutputFormatter;
 pub fn run_analysis(cli: &Client) {
     let formatter = OutputFormatter::new();
 
-    if cli.verbose {
-        println!("Analyzing directory: {}", cli.directory);
-        println!("Minimum lines filter: {}", cli.min_lines);
-        println!("Output format: {:?}", cli.format);
-        println!();
-    }
-
     let files = match find_rust_files(&cli.directory) {
         Ok(files) => files,
         Err(e) => {
@@ -39,21 +33,11 @@ pub fn run_analysis(cli: &Client) {
         }
     };
 
-    if cli.verbose {
-        println!("Found {} Rust files", files.len());
-    }
-
     formatter.display_analysis_header(files.len());
 
     // Analyze all functions across all files
     let all_results = analyze_all_files(&files);
 
-    // Filter results based on minimum lines
-    let filtered_results: Vec<_> = all_results
-        .into_iter()
-        .filter(|result| result.total >= cli.min_lines)
-        .collect();
-
     // Display results (sorted by code lines descending - default behavior)
-    formatter.display_results_sorted_by_code(&filtered_results);
+    formatter.display_results_sorted_by_code(&all_results);
 }
