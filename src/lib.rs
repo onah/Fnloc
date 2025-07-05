@@ -11,7 +11,7 @@ pub mod function_extractor;
 pub mod output_formatter;
 
 // Re-export commonly used types for convenience
-pub use client::{Client, SortBy};
+pub use client::{Client, OutputFormat};
 pub use errors::{AnalysisError, AnalysisResult};
 pub use function_analyzer::FunctionAnalysisResult;
 
@@ -27,10 +27,6 @@ pub fn run_analysis(cli: &Client) {
     if cli.verbose {
         println!("Analyzing directory: {}", cli.directory);
         println!("Minimum lines filter: {}", cli.min_lines);
-        if let Some(limit) = cli.limit {
-            println!("Display limit: {}", limit);
-        }
-        println!("Sort by: {:?}", cli.sort);
         println!("Output format: {:?}", cli.format);
         println!();
     }
@@ -58,25 +54,6 @@ pub fn run_analysis(cli: &Client) {
         .filter(|result| result.total >= cli.min_lines)
         .collect();
 
-    // Apply limit if specified
-    let limited_results = if let Some(limit) = cli.limit {
-        filtered_results.into_iter().take(limit).collect()
-    } else {
-        filtered_results
-    };
-
-    // Display results sorted by specified criteria
-    match cli.sort {
-        SortBy::Total | SortBy::Code => {
-            formatter.display_results_sorted_by_code(&limited_results);
-        }
-        SortBy::Comments => {
-            // TODO: Implement comment-based sorting
-            formatter.display_results_sorted_by_code(&limited_results);
-        }
-        SortBy::Name => {
-            // TODO: Implement name-based sorting
-            formatter.display_results_sorted_by_code(&limited_results);
-        }
-    }
+    // Display results (sorted by code lines descending - default behavior)
+    formatter.display_results_sorted_by_code(&filtered_results);
 }
