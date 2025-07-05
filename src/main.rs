@@ -1,4 +1,4 @@
-mod cli;
+mod client;
 mod errors;
 mod file_scanner;
 mod function_analyzer;
@@ -6,13 +6,13 @@ mod function_extractor;
 mod output_formatter;
 
 use clap::Parser;
-use cli::{Cli, SortBy};
+use client::{Client, SortBy};
 use file_scanner::find_rust_files;
 use function_analyzer::analyze_all_files;
 use output_formatter::OutputFormatter;
 
 /// Runs the function analysis for all Rust files in the configured directory
-fn run_analysis(cli: &Cli) {
+fn run_analysis(cli: &Client) {
     let formatter = OutputFormatter::new();
 
     if cli.verbose {
@@ -73,6 +73,6 @@ fn run_analysis(cli: &Cli) {
 }
 
 fn main() {
-    let cli = Cli::parse();
+    let cli = Client::parse();
     run_analysis(&cli);
 }

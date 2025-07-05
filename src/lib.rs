@@ -1,5 +1,5 @@
 //! Fnloc - Function Line Counter for Rust
-//! 
+//!
 //! A tool for analyzing Rust source code and counting lines of code,
 //! comments, and empty lines per function.
 

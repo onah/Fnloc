@@ -6,7 +6,7 @@ use clap::Parser;
 #[command(version = "0.1.0")]
 #[command(about = "Analyzes Rust functions and counts lines of code")]
 #[command(long_about = None)]
-pub struct Cli {
+pub struct Client {
     /// Directory to analyze for Rust files
     #[arg(value_name = "DIRECTORY")]
     #[arg(default_value = "./src")]
