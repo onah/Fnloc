@@ -1,5 +1,6 @@
-use crate::complexity_analyzer::{calculate_cyclomatic_complexity, calculate_nesting_depth};
+use crate::cyclomatic_complexity::calculate_cyclomatic_complexity;
 use crate::function_extractor::{FunctionSpan, extract_function_spans, read_rust_file};
+use crate::nesting_depth::calculate_nesting_depth;
 use syn::{Item, parse_file};
 
 /// Result of analyzing a function's line composition, complexity, and nesting

@@ -4,11 +4,12 @@
 //! comments, and empty lines per function.
 
 pub mod client;
-pub mod complexity_analyzer;
+pub mod cyclomatic_complexity;
 pub mod errors;
 pub mod file_scanner;
 pub mod function_analyzer;
 pub mod function_extractor;
+pub mod nesting_depth;
 pub mod output_formatter;
 
 // Re-export commonly used types for convenience
