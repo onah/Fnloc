@@ -3,6 +3,10 @@ name = "fnloc"
 version = "0.1.0"
 edition = "2024"
 
+[[bin]]
+name = "cargo-fnloc"
+path = "src/main.rs"
+
 [dependencies]
 syn = { version = "2.0.104", features = ["full"] }
 walkdir = "2.4"

@@ -38,7 +38,7 @@ fn test_cli_help() {
 
     assert!(success, "Help command should succeed");
     assert!(
-        stdout.contains("Analyzes Rust functions"),
+        stdout.contains("Function analyzer for Rust code"),
         "Help should contain description"
     );
     assert!(
