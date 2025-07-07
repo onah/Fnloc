@@ -15,8 +15,9 @@ pub struct FunctionAnalysisResult {
     pub nesting_depth: usize,
 }
 
-/// Analyzes the line composition, cyclomatic complexity, and nesting depth of a function span
-pub fn analyze_function_lines(func: &FunctionSpan, source: &str) -> FunctionAnalysisResult {
+/// Counts lines in a function span (code, comment, empty lines)
+/// Returns (total, code, comment, empty)
+pub fn count_function_lines(func: &FunctionSpan) -> (usize, usize, usize, usize) {
     let mut code = 0;
     let mut comment = 0;
     let mut empty = 0;
@@ -32,38 +33,54 @@ pub fn analyze_function_lines(func: &FunctionSpan, source: &str) -> FunctionAnal
         }
     }
 
-    // Calculate cyclomatic complexity and nesting depth by parsing the source and finding the function
-    let (cyclomatic_complexity, nesting_depth) = calculate_function_metrics(source, &func.name);
+    let total = func.lines.len();
+    (total, code, comment, empty)
+}
+
+/// Calculates cyclomatic complexity for a specific function by name from source code
+pub fn calculate_cyclomatic_complexity_from_source(source: &str, function_name: &str) -> usize {
+    if let Ok(parsed) = parse_file(source) {
+        for item in parsed.items {
+            if let Item::Fn(func) = item {
+                if func.sig.ident.to_string() == function_name {
+                    return calculate_cyclomatic_complexity(&func);
+                }
+            }
+        }
+    }
+    1 // Default complexity for simple functions
+}
+
+/// Calculates nesting depth for a specific function by name from source code
+pub fn calculate_nesting_depth_from_source(source: &str, function_name: &str) -> usize {
+    if let Ok(parsed) = parse_file(source) {
+        for item in parsed.items {
+            if let Item::Fn(func) = item {
+                if func.sig.ident.to_string() == function_name {
+                    return calculate_nesting_depth(&func);
+                }
+            }
+        }
+    }
+    0 // Default nesting depth
+}
+
+/// Analyzes the line composition, cyclomatic complexity, and nesting depth of a function span
+/// This is the main integration function that combines all metrics
+pub fn analyze_function_complete(func: &FunctionSpan, source: &str) -> FunctionAnalysisResult {
+    let (total, code, comment, empty) = count_function_lines(func);
+    let cyclomatic_complexity = calculate_cyclomatic_complexity_from_source(source, &func.name);
+    let nesting_depth = calculate_nesting_depth_from_source(source, &func.name);
 
     FunctionAnalysisResult {
         name: func.name.clone(),
-        total: func.lines.len(),
+        total,
         code,
         comment,
         empty,
         cyclomatic_complexity,
         nesting_depth,
     }
-}
-
-/// Calculates both cyclomatic complexity and nesting depth for a specific function by name from source code
-fn calculate_function_metrics(source: &str, function_name: &str) -> (usize, usize) {
-    // Parse the source code into an AST
-    if let Ok(parsed) = parse_file(source) {
-        // Find the function by name and calculate its metrics
-        for item in parsed.items {
-            if let Item::Fn(func) = item {
-                if func.sig.ident.to_string() == function_name {
-                    let complexity = calculate_cyclomatic_complexity(&func);
-                    let nesting = calculate_nesting_depth(&func);
-                    return (complexity, nesting);
-                }
-            }
-        }
-    }
-
-    // Default values if parsing fails or function not found
-    (1, 0)
 }
 
 /// Analyzes all functions in a Rust file and returns analysis results
@@ -73,7 +90,7 @@ pub fn analyze_file_functions(path: &str) -> Vec<FunctionAnalysisResult> {
 
     function_spans
         .iter()
-        .map(|span| analyze_function_lines(span, &source))
+        .map(|span| analyze_function_complete(span, &source))
         .collect()
 }
 
@@ -92,6 +109,12 @@ pub fn analyze_all_files(file_paths: &[String]) -> Vec<FunctionAnalysisResult> {
     }
 
     all_results
+}
+
+/// Backward compatibility alias for analyze_function_complete
+/// @deprecated Use analyze_function_complete instead
+pub fn analyze_function_lines(func: &FunctionSpan, source: &str) -> FunctionAnalysisResult {
+    analyze_function_complete(func, source)
 }
 
 #[cfg(test)]
@@ -484,5 +507,53 @@ mod tests {
         let result = analyze_function_lines(&span, source);
 
         assert_eq!(result.cyclomatic_complexity, 4); // Base 1 + if 1 + && 1 + || 1
+    }
+
+    #[test]
+    fn test_count_function_lines_basic() {
+        let lines = vec![
+            "fn test() {".to_string(),
+            "    let x = 1;".to_string(),
+            "    // comment".to_string(),
+            "".to_string(),
+            "}".to_string(),
+        ];
+
+        let span = FunctionSpan {
+            name: "test".to_string(),
+            lines,
+        };
+
+        let (total, code, comment, empty) = count_function_lines(&span);
+
+        assert_eq!(total, 5);
+        assert_eq!(code, 3); // fn, let, }
+        assert_eq!(comment, 1); // // comment
+        assert_eq!(empty, 1); // empty line
+    }
+
+    #[test]
+    fn test_calculate_cyclomatic_complexity_from_source() {
+        let source = "fn with_if(x: i32) {\n    if x > 0 {\n        println!(\"positive\");\n    }\n}";
+        let complexity = calculate_cyclomatic_complexity_from_source(source, "with_if");
+        assert_eq!(complexity, 2); // Base 1 + if 1
+    }
+
+    #[test]
+    fn test_calculate_nesting_depth_from_source() {
+        let source = "fn nested() {\n    if true {\n        for i in 0..10 {\n            println!(\"{}\", i);\n        }\n    }\n}";
+        let nesting = calculate_nesting_depth_from_source(source, "nested");
+        assert_eq!(nesting, 2); // if + for
+    }
+
+    #[test]
+    fn test_function_not_found_defaults() {
+        let source = "fn other_function() {}";
+        
+        let complexity = calculate_cyclomatic_complexity_from_source(source, "nonexistent");
+        assert_eq!(complexity, 1); // Default complexity
+        
+        let nesting = calculate_nesting_depth_from_source(source, "nonexistent");
+        assert_eq!(nesting, 0); // Default nesting
     }
 }

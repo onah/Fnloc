@@ -13,7 +13,11 @@ pub mod function_analyzer;
 pub use cyclomatic_complexity::calculate_cyclomatic_complexity;
 pub use nesting_depth::calculate_nesting_depth;
 pub use function_analyzer::{
-    analyze_function_lines, 
+    count_function_lines,
+    calculate_cyclomatic_complexity_from_source,
+    calculate_nesting_depth_from_source,
+    analyze_function_complete,
+    analyze_function_lines, // Backward compatibility
     analyze_all_files, 
     FunctionAnalysisResult
 };
