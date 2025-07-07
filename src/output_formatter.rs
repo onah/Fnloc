@@ -1,4 +1,4 @@
-use crate::function_analyzer::FunctionAnalysisResult;
+use crate::analyzer::FunctionAnalysisResult;
 
 /// Handles the formatting and display of analysis results
 pub struct OutputFormatter;

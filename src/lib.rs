@@ -3,23 +3,21 @@
 //! A tool for analyzing Rust source code and counting lines of code,
 //! comments, and empty lines per function.
 
+pub mod analyzer;
 pub mod client;
-pub mod cyclomatic_complexity;
 pub mod errors;
 pub mod file_scanner;
-pub mod function_analyzer;
 pub mod function_extractor;
-pub mod nesting_depth;
 pub mod output_formatter;
 
 // Re-export commonly used types for convenience
 pub use client::{Client, OutputFormat};
 pub use errors::{AnalysisError, AnalysisResult};
-pub use function_analyzer::FunctionAnalysisResult;
+pub use analyzer::FunctionAnalysisResult;
 
 // Internal imports for the run_analysis function
 use file_scanner::find_rust_files;
-use function_analyzer::analyze_all_files;
+use analyzer::analyze_all_files;
 use output_formatter::OutputFormatter;
 
 /// Runs the function analysis for all Rust files in the configured directory
