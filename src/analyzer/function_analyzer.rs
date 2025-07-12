@@ -1,115 +1,17 @@
-use crate::analyzer::FunctionAnalysisResult;
-use crate::analyzer::cyclomatic_complexity::calculate_cyclomatic_complexity;
-use crate::analyzer::function_extractor::{FunctionSpan, extract_function_spans, read_rust_file};
-use crate::analyzer::nesting_depth::calculate_nesting_depth;
-use syn::{Item, parse_file};
-
-/// Counts lines in a function span (code, comment, empty lines)
-/// Returns (total, code, comment, empty)
-pub fn count_function_lines(func: &FunctionSpan) -> (usize, usize, usize, usize) {
-    let mut code = 0;
-    let mut comment = 0;
-    let mut empty = 0;
-
-    for line in &func.lines {
-        let trimmed = line.trim();
-        if trimmed.is_empty() {
-            empty += 1;
-        } else if trimmed.starts_with("//") || trimmed.starts_with("/*") {
-            comment += 1;
-        } else {
-            code += 1;
-        }
-    }
-
-    let total = func.lines.len();
-    (total, code, comment, empty)
-}
-
-/// Calculates cyclomatic complexity for a specific function by name from source code
-pub fn calculate_cyclomatic_complexity_from_source(source: &str, function_name: &str) -> usize {
-    if let Ok(parsed) = parse_file(source) {
-        for item in parsed.items {
-            if let Item::Fn(func) = item {
-                if func.sig.ident.to_string() == function_name {
-                    return calculate_cyclomatic_complexity(&func);
-                }
-            }
-        }
-    }
-    1 // Default complexity for simple functions
-}
-
-/// Calculates nesting depth for a specific function by name from source code
-pub fn calculate_nesting_depth_from_source(source: &str, function_name: &str) -> usize {
-    if let Ok(parsed) = parse_file(source) {
-        for item in parsed.items {
-            if let Item::Fn(func) = item {
-                if func.sig.ident.to_string() == function_name {
-                    return calculate_nesting_depth(&func);
-                }
-            }
-        }
-    }
-    0 // Default nesting depth
-}
-
-/// Analyzes the line composition, cyclomatic complexity, and nesting depth of a function span
-/// This is the main integration function that combines all metrics
-pub fn analyze_function_complete(func: &FunctionSpan, source: &str) -> FunctionAnalysisResult {
-    let (total, code, comment, empty) = count_function_lines(func);
-    let cyclomatic_complexity = calculate_cyclomatic_complexity_from_source(source, &func.name);
-    let nesting_depth = calculate_nesting_depth_from_source(source, &func.name);
-
-    FunctionAnalysisResult {
-        name: func.name.clone(),
-        total,
-        code,
-        comment,
-        empty,
-        cyclomatic_complexity,
-        nesting_depth,
-    }
-}
-
-/// Analyzes all functions in a Rust file and returns analysis results
-pub fn analyze_file_functions(path: &str) -> Vec<FunctionAnalysisResult> {
-    let source = read_rust_file(path);
-    let function_spans = extract_function_spans(&source);
-
-    function_spans
-        .iter()
-        .map(|span| analyze_function_complete(span, &source))
-        .collect()
-}
-
-/// Analyzes all functions across multiple files and returns unsorted results
-pub fn analyze_all_files(file_paths: &[String]) -> Vec<FunctionAnalysisResult> {
-    let mut all_results = Vec::new();
-
-    for path in file_paths {
-        let mut file_results = analyze_file_functions(path);
-        // Add file path information to each result for context
-        for result in &mut file_results {
-            // We'll modify the name to include the file path
-            result.name = format!("{}::{}", path, result.name);
-        }
-        all_results.extend(file_results);
-    }
-
-    all_results
-}
-
-/// Backward compatibility alias for analyze_function_complete
-/// @deprecated Use analyze_function_complete instead
-pub fn analyze_function_lines(func: &FunctionSpan, source: &str) -> FunctionAnalysisResult {
-    analyze_function_complete(func, source)
-}
+//! Unit tests for function analysis functionality
+//!
+//! This module contains comprehensive tests for the analyzer module's functions.
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::analyzer::FunctionAnalysisResult;
+    use crate::analyzer::{
+        FunctionAnalysisResult, 
+        analyze_function_lines, 
+        count_function_lines,
+        analyze_all_files,
+        calculate_cyclomatic_complexity_from_source,
+        calculate_nesting_depth_from_source
+    };
     use crate::analyzer::function_extractor::FunctionSpan;
 
     #[test]
