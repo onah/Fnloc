@@ -8,8 +8,8 @@ use std::fs;
 use std::path::Path;
 
 // Import the modules we need to test
-use fnloc::file_scanner::find_rust_files;
 use fnloc::analyzer::{FunctionAnalysisResult, analyze_all_files};
+use fnloc::file_scanner::find_rust_files;
 
 /// Expected result for a function analysis
 #[derive(Debug, PartialEq)]

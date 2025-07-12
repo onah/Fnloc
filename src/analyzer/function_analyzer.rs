@@ -534,7 +534,8 @@ mod tests {
 
     #[test]
     fn test_calculate_cyclomatic_complexity_from_source() {
-        let source = "fn with_if(x: i32) {\n    if x > 0 {\n        println!(\"positive\");\n    }\n}";
+        let source =
+            "fn with_if(x: i32) {\n    if x > 0 {\n        println!(\"positive\");\n    }\n}";
         let complexity = calculate_cyclomatic_complexity_from_source(source, "with_if");
         assert_eq!(complexity, 2); // Base 1 + if 1
     }
@@ -549,10 +550,10 @@ mod tests {
     #[test]
     fn test_function_not_found_defaults() {
         let source = "fn other_function() {}";
-        
+
         let complexity = calculate_cyclomatic_complexity_from_source(source, "nonexistent");
         assert_eq!(complexity, 1); // Default complexity
-        
+
         let nesting = calculate_nesting_depth_from_source(source, "nonexistent");
         assert_eq!(nesting, 0); // Default nesting
     }

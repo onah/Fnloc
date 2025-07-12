@@ -11,13 +11,13 @@ pub mod function_extractor;
 pub mod output_formatter;
 
 // Re-export commonly used types for convenience
+pub use analyzer::FunctionAnalysisResult;
 pub use client::{Client, OutputFormat};
 pub use errors::{AnalysisError, AnalysisResult};
-pub use analyzer::FunctionAnalysisResult;
 
 // Internal imports for the run_analysis function
-use file_scanner::find_rust_files;
 use analyzer::analyze_all_files;
+use file_scanner::find_rust_files;
 use output_formatter::OutputFormatter;
 
 /// Runs the function analysis for all Rust files in the configured directory
