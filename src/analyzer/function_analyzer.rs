@@ -4,15 +4,13 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::analyzer::{
-        FunctionAnalysisResult, 
-        analyze_function_lines, 
-        count_function_lines,
-        calculate_cyclomatic_complexity_from_source,
-        calculate_nesting_depth_from_source
-    };
-    use crate::analyzer::function_extractor::FunctionSpan;
     use crate::analyze_all_files;
+    use crate::analyzer::function_extractor::FunctionSpan;
+    use crate::analyzer::{
+        FunctionAnalysisResult, analyze_function_lines,
+        calculate_cyclomatic_complexity_from_source, calculate_nesting_depth_from_source,
+        count_function_lines,
+    };
 
     #[test]
     fn test_analyze_function_lines_basic() {
