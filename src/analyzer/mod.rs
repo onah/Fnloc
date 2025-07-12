@@ -19,6 +19,7 @@ pub struct FunctionAnalysisResult {
 
 pub mod cyclomatic_complexity;
 pub mod function_analyzer;
+pub mod function_extractor;
 pub mod nesting_depth;
 
 // Re-export commonly used functions for convenience
@@ -31,4 +32,5 @@ pub use function_analyzer::{
     calculate_nesting_depth_from_source,
     count_function_lines,
 };
+pub use function_extractor::{FunctionSpan, extract_function_spans, read_rust_file};
 pub use nesting_depth::calculate_nesting_depth;

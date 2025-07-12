@@ -7,7 +7,6 @@ pub mod analyzer;
 pub mod client;
 pub mod errors;
 pub mod file_scanner;
-pub mod function_extractor;
 pub mod output_formatter;
 
 // Re-export commonly used types for convenience
