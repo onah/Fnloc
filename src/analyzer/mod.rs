@@ -104,34 +104,6 @@ pub fn analyze_function_complete(func: &FunctionSpan, source: &str) -> FunctionA
     }
 }
 
-/// Analyzes all functions in a Rust file and returns analysis results
-pub fn analyze_file_functions(path: &str) -> Vec<FunctionAnalysisResult> {
-    let source = read_rust_file(path);
-    let function_spans = extract_function_spans(&source);
-
-    function_spans
-        .iter()
-        .map(|span| analyze_function_complete(span, &source))
-        .collect()
-}
-
-/// Analyzes all functions across multiple files and returns unsorted results
-pub fn analyze_all_files(file_paths: &[String]) -> Vec<FunctionAnalysisResult> {
-    let mut all_results = Vec::new();
-
-    for path in file_paths {
-        let mut file_results = analyze_file_functions(path);
-        // Add file path information to each result for context
-        for result in &mut file_results {
-            // We'll modify the name to include the file path
-            result.name = format!("{}::{}", path, result.name);
-        }
-        all_results.extend(file_results);
-    }
-
-    all_results
-}
-
 /// Backward compatibility alias for analyze_function_complete
 /// @deprecated Use analyze_function_complete instead
 pub fn analyze_function_lines(func: &FunctionSpan, source: &str) -> FunctionAnalysisResult {

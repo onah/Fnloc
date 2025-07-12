@@ -8,11 +8,11 @@ mod tests {
         FunctionAnalysisResult, 
         analyze_function_lines, 
         count_function_lines,
-        analyze_all_files,
         calculate_cyclomatic_complexity_from_source,
         calculate_nesting_depth_from_source
     };
     use crate::analyzer::function_extractor::FunctionSpan;
+    use crate::analyze_all_files;
 
     #[test]
     fn test_analyze_function_lines_basic() {

@@ -15,7 +15,7 @@ pub use client::{Client, OutputFormat};
 pub use errors::{AnalysisError, AnalysisResult};
 
 // Internal imports for the run_analysis function
-use analyzer::analyze_all_files;
+use analyzer::{analyze_function_complete, extract_function_spans, read_rust_file};
 use file_scanner::find_rust_files;
 use output_formatter::OutputFormatter;
 
@@ -38,4 +38,36 @@ pub fn run_analysis(cli: &Client) {
 
     // Display results (sorted by code lines descending - default behavior)
     formatter.display_results_sorted_by_code(&all_results);
+}
+
+// ============================================================================
+// FILE ANALYSIS FUNCTIONS
+// ============================================================================
+
+/// Analyzes all functions in a Rust file and returns analysis results
+pub fn analyze_file_functions(path: &str) -> Vec<FunctionAnalysisResult> {
+    let source = read_rust_file(path);
+    let function_spans = extract_function_spans(&source);
+
+    function_spans
+        .iter()
+        .map(|span| analyze_function_complete(span, &source))
+        .collect()
+}
+
+/// Analyzes all functions across multiple files and returns unsorted results
+pub fn analyze_all_files(file_paths: &[String]) -> Vec<FunctionAnalysisResult> {
+    let mut all_results = Vec::new();
+
+    for path in file_paths {
+        let mut file_results = analyze_file_functions(path);
+        // Add file path information to each result for context
+        for result in &mut file_results {
+            // We'll modify the name to include the file path
+            result.name = format!("{}::{}", path, result.name);
+        }
+        all_results.extend(file_results);
+    }
+
+    all_results
 }
