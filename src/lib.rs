@@ -19,7 +19,22 @@ use analyzer::{analyze_function_complete, extract_function_spans};
 use file_scanner::find_rust_files;
 use output_formatter::OutputFormatter;
 use std::fs;
+use std::path::Path;
 
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
+/// Normalizes file path separators to forward slashes for consistent output across platforms
+fn normalize_path(path: &str) -> String {
+    Path::new(path)
+        .components()
+        .map(|component| component.as_os_str().to_string_lossy())
+        .collect::<Vec<_>>()
+        .join("/")
+}
+
+// ============================================================================
 /// Reads a Rust file and returns its content as a string
 pub fn read_rust_file(path: &str) -> String {
     fs::read_to_string(path).expect("Failed to read file")
@@ -68,9 +83,11 @@ pub fn analyze_all_files(file_paths: &[String]) -> Vec<FunctionAnalysisResult> {
     for path in file_paths {
         let mut file_results = analyze_file_functions(path);
         // Add file path information to each result for context
+        // Normalize path separators for consistent output across platforms
+        let normalized_path = normalize_path(path);
         for result in &mut file_results {
-            // We'll modify the name to include the file path
-            result.name = format!("{}::{}", path, result.name);
+            // We'll modify the name to include the normalized file path
+            result.name = format!("{}::{}", normalized_path, result.name);
         }
         all_results.extend(file_results);
     }
