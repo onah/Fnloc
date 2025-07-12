@@ -5,6 +5,18 @@
 //! - Nesting depth measurement
 //! - Function line analysis and aggregation
 
+/// Result of analyzing a function's line composition, complexity, and nesting
+#[derive(Debug, Clone)]
+pub struct FunctionAnalysisResult {
+    pub name: String,
+    pub total: usize,
+    pub code: usize,
+    pub comment: usize,
+    pub empty: usize,
+    pub cyclomatic_complexity: usize,
+    pub nesting_depth: usize,
+}
+
 pub mod cyclomatic_complexity;
 pub mod function_analyzer;
 pub mod nesting_depth;
@@ -12,7 +24,6 @@ pub mod nesting_depth;
 // Re-export commonly used functions for convenience
 pub use cyclomatic_complexity::calculate_cyclomatic_complexity;
 pub use function_analyzer::{
-    FunctionAnalysisResult,
     analyze_all_files,
     analyze_function_complete,
     analyze_function_lines, // Backward compatibility

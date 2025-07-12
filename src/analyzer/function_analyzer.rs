@@ -1,19 +1,8 @@
+use crate::analyzer::FunctionAnalysisResult;
 use crate::analyzer::cyclomatic_complexity::calculate_cyclomatic_complexity;
 use crate::analyzer::nesting_depth::calculate_nesting_depth;
 use crate::function_extractor::{FunctionSpan, extract_function_spans, read_rust_file};
 use syn::{Item, parse_file};
-
-/// Result of analyzing a function's line composition, complexity, and nesting
-#[derive(Debug, Clone)]
-pub struct FunctionAnalysisResult {
-    pub name: String,
-    pub total: usize,
-    pub code: usize,
-    pub comment: usize,
-    pub empty: usize,
-    pub cyclomatic_complexity: usize,
-    pub nesting_depth: usize,
-}
 
 /// Counts lines in a function span (code, comment, empty lines)
 /// Returns (total, code, comment, empty)
@@ -120,6 +109,7 @@ pub fn analyze_function_lines(func: &FunctionSpan, source: &str) -> FunctionAnal
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::analyzer::FunctionAnalysisResult;
     use crate::function_extractor::FunctionSpan;
 
     #[test]
