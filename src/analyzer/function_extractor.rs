@@ -1,15 +1,9 @@
-use std::fs;
 use syn::Item;
 
 /// Represents a span of lines that contain a function
 pub struct FunctionSpan {
     pub name: String,
     pub lines: Vec<String>,
-}
-
-/// Reads a Rust file and returns its content as a string
-pub fn read_rust_file(path: &str) -> String {
-    fs::read_to_string(path).expect("Failed to read file")
 }
 
 /// Extracts function spans from source code using syn parser

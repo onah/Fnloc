@@ -15,9 +15,15 @@ pub use client::{Client, OutputFormat};
 pub use errors::{AnalysisError, AnalysisResult};
 
 // Internal imports for the run_analysis function
-use analyzer::{analyze_function_complete, extract_function_spans, read_rust_file};
+use analyzer::{analyze_function_complete, extract_function_spans};
 use file_scanner::find_rust_files;
 use output_formatter::OutputFormatter;
+use std::fs;
+
+/// Reads a Rust file and returns its content as a string
+pub fn read_rust_file(path: &str) -> String {
+    fs::read_to_string(path).expect("Failed to read file")
+}
 
 /// Runs the function analysis for all Rust files in the configured directory
 pub fn run_analysis(cli: &Client) {

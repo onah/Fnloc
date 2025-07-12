@@ -27,7 +27,7 @@ pub mod nesting_depth;
 
 // Re-export commonly used functions for convenience
 pub use cyclomatic_complexity::calculate_cyclomatic_complexity;
-pub use function_extractor::{FunctionSpan, extract_function_spans, read_rust_file};
+pub use function_extractor::{FunctionSpan, extract_function_spans};
 pub use nesting_depth::calculate_nesting_depth;
 
 // Main interface functions are now defined directly in this module
