@@ -27,7 +27,7 @@ pub fn read_rust_file(path: &str) -> String {
 
 /// Runs the function analysis for all Rust files in the configured directory
 pub fn run_analysis(cli: &Client) {
-    let formatter = OutputFormatter::new();
+    let formatter = OutputFormatter::with_format(cli.format.clone());
 
     let files = match find_rust_files(&cli.directory) {
         Ok(files) => files,
