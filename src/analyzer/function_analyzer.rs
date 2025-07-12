@@ -1,7 +1,7 @@
 use crate::analyzer::FunctionAnalysisResult;
 use crate::analyzer::cyclomatic_complexity::calculate_cyclomatic_complexity;
-use crate::analyzer::nesting_depth::calculate_nesting_depth;
 use crate::analyzer::function_extractor::{FunctionSpan, extract_function_spans, read_rust_file};
+use crate::analyzer::nesting_depth::calculate_nesting_depth;
 use syn::{Item, parse_file};
 
 /// Counts lines in a function span (code, comment, empty lines)
