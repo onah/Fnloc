@@ -29,7 +29,9 @@ impl OutputFormatter {
                 // JSON header will be handled in the results output
             }
             OutputFormat::Csv => {
-                println!("Function,Total Lines,Code Lines,Comment Lines,Empty Lines,Cyclomatic Complexity,Nesting Depth");
+                println!(
+                    "Function,Total Lines,Code Lines,Comment Lines,Empty Lines,Cyclomatic Complexity,Nesting Depth"
+                );
             }
         }
     }

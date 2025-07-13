@@ -2,6 +2,15 @@
 name = "fnloc"
 version = "0.1.0"
 edition = "2024"
+authors = ["onah"]
+description = "Function Line Counter for Rust - Analyze Rust source code and measure function complexity"
+license = "MIT"
+repository = "https://github.com/onah/fnloc"
+homepage = "https://github.com/onah/fnloc"
+documentation = "https://github.com/onah/fnloc"
+readme = "README.md"
+keywords = ["rust", "analysis", "metrics", "complexity", "lines"]
+categories = ["command-line-utilities", "development-tools"]
 
 [[bin]]
 name = "cargo-fnloc"

@@ -154,7 +154,7 @@ mod tests {
         // This is an integration test that would require actual file I/O
         // For a unit test, we would need to mock the file reading functionality
         // For now, we'll test the structure
-        let file_paths = vec!["test_file.rs".to_string()];
+        let file_paths = ["test_file.rs".to_string()];
 
         // Note: This test would fail in actual execution because the file doesn't exist
         // In a real test environment, we would either:
@@ -222,7 +222,7 @@ mod tests {
     #[test]
     fn test_analyze_all_files_with_file_paths() {
         // Test the structure and path formatting without actual file I/O
-        let file_paths = vec!["src/test1.rs".to_string(), "src/test2.rs".to_string()];
+        let file_paths = ["src/test1.rs".to_string(), "src/test2.rs".to_string()];
 
         // We can't test the actual file reading without mocking,
         // but we can test the empty case

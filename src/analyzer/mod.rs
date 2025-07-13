@@ -63,7 +63,7 @@ pub fn calculate_cyclomatic_complexity_from_source(source: &str, function_name: 
     if let Ok(parsed) = parse_file(source) {
         for item in parsed.items {
             if let Item::Fn(func) = item {
-                if func.sig.ident.to_string() == function_name {
+                if func.sig.ident == function_name {
                     return cyclomatic_complexity::calculate_cyclomatic_complexity(&func);
                 }
             }
@@ -77,7 +77,7 @@ pub fn calculate_nesting_depth_from_source(source: &str, function_name: &str) ->
     if let Ok(parsed) = parse_file(source) {
         for item in parsed.items {
             if let Item::Fn(func) = item {
-                if func.sig.ident.to_string() == function_name {
+                if func.sig.ident == function_name {
                     return nesting_depth::calculate_nesting_depth(&func);
                 }
             }
