@@ -47,7 +47,7 @@ pub fn run_analysis(cli: &Client) {
     let files = match find_rust_files(&cli.directory) {
         Ok(files) => files,
         Err(e) => {
-            eprintln!("Error: {}", e);
+            eprintln!("Error: {e}");
             std::process::exit(1);
         }
     };

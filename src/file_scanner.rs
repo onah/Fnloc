@@ -14,8 +14,7 @@ pub fn find_rust_files(dir: &str) -> AnalysisResult<Vec<String>> {
                 }
             } else {
                 AnalysisError::Io(std::io::Error::other(format!(
-                    "Error reading directory entry: {}",
-                    e
+                    "Error reading directory entry: {e}"
                 )))
             }
         })?;

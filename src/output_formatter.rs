@@ -23,7 +23,7 @@ impl OutputFormatter {
     pub fn display_analysis_header(&self, file_count: usize) {
         match self.format {
             OutputFormat::Table => {
-                println!("Analyzing {} Rust files...\n", file_count);
+                println!("Analyzing {file_count} Rust files...\n");
             }
             OutputFormat::Json => {
                 // JSON header will be handled in the results output

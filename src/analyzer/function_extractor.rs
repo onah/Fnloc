@@ -33,7 +33,7 @@ pub fn extract_function_spans(source: &str) -> Vec<FunctionSpan> {
 fn find_function_bounds(lines: &[&str], fn_name: &str) -> Option<(usize, usize)> {
     let mut start = None;
     let mut brace_count = 0;
-    let fn_pattern = format!("fn {}", fn_name);
+    let fn_pattern = format!("fn {fn_name}");
 
     for (i, line) in lines.iter().enumerate() {
         if start.is_none() && line.contains(&fn_pattern) {

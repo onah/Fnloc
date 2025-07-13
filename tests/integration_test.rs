@@ -80,11 +80,11 @@ fn test_sample_files_analysis() {
         "Test sample directory does not exist"
     );
     assert!(
-        Path::new(&format!("{}/sample.rs", test_dir)).exists(),
+        Path::new(&format!("{test_dir}/sample.rs")).exists(),
         "sample.rs does not exist"
     );
     assert!(
-        Path::new(&format!("{}/module.rs", test_dir)).exists(),
+        Path::new(&format!("{test_dir}/module.rs")).exists(),
         "module.rs does not exist"
     );
 
@@ -98,7 +98,7 @@ fn test_sample_files_analysis() {
     assert!(!results.is_empty(), "No analysis results produced");
 
     // Load expected results
-    let expected_results = parse_expected_results(&format!("{}/expected_results.txt", test_dir))
+    let expected_results = parse_expected_results(&format!("{test_dir}/expected_results.txt"))
         .expect("Failed to parse expected results");
 
     // Convert results to map for easier comparison
