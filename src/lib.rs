@@ -21,10 +21,6 @@ use output_formatter::OutputFormatter;
 use std::fs;
 use std::path::Path;
 
-// ============================================================================
-// UTILITY FUNCTIONS
-// ============================================================================
-
 /// Normalizes file path separators to forward slashes for consistent output across platforms
 fn normalize_path(path: &str) -> String {
     Path::new(path)
@@ -34,7 +30,6 @@ fn normalize_path(path: &str) -> String {
         .join("/")
 }
 
-// ============================================================================
 /// Reads a Rust file and returns its content as a string
 pub fn read_rust_file(path: &str) -> String {
     fs::read_to_string(path).expect("Failed to read file")
@@ -61,19 +56,17 @@ pub fn run_analysis(cli: &Client) {
     formatter.display_results_sorted_by_code(&all_results);
 }
 
-// ============================================================================
-// FILE ANALYSIS FUNCTIONS
-// ============================================================================
-
 /// Analyzes all functions in a Rust file and returns analysis results
-pub fn analyze_file_functions(path: &str) -> Vec<FunctionAnalysisResult> {
-    let source = read_rust_file(path);
+pub fn analyze_file_functions(path: &str) -> AnalysisResult<Vec<FunctionAnalysisResult>> {
+    let source = fs::read_to_string(path).map_err(AnalysisError::Io)?;
     let function_spans = extract_function_spans(&source);
 
-    function_spans
+    let results = function_spans
         .iter()
         .map(|span| analyze_function_complete(span, &source))
-        .collect()
+        .collect();
+
+    Ok(results)
 }
 
 /// Analyzes all functions across multiple files and returns unsorted results
@@ -81,15 +74,22 @@ pub fn analyze_all_files(file_paths: &[String]) -> Vec<FunctionAnalysisResult> {
     let mut all_results = Vec::new();
 
     for path in file_paths {
-        let mut file_results = analyze_file_functions(path);
-        // Add file path information to each result for context
-        // Normalize path separators for consistent output across platforms
-        let normalized_path = normalize_path(path);
-        for result in &mut file_results {
-            // We'll modify the name to include the normalized file path
-            result.name = format!("{}::{}", normalized_path, result.name);
+        match analyze_file_functions(path) {
+            Ok(mut file_results) => {
+                // Add file path information to each result for context
+                // Normalize path separators for consistent output across platforms
+                let normalized_path = normalize_path(path);
+                for result in &mut file_results {
+                    // We'll modify the name to include the normalized file path
+                    result.name = format!("{}::{}", normalized_path, result.name);
+                }
+                all_results.extend(file_results);
+            }
+            Err(e) => {
+                eprintln!("Warning: Failed to analyze file {path}: {e}");
+                // Continue processing other files
+            }
         }
-        all_results.extend(file_results);
     }
 
     all_results
