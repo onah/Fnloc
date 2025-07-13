@@ -53,7 +53,7 @@ pub fn run_analysis(cli: &Client) {
 /// Analyzes all functions in a Rust file and returns analysis results
 pub fn analyze_file_functions(path: &str) -> AnalysisResult<Vec<FunctionAnalysisResult>> {
     let source = fs::read_to_string(path).map_err(AnalysisError::Io)?;
-    let function_spans = extract_function_spans(&source);
+    let function_spans = extract_function_spans(&source)?;
 
     let results = function_spans
         .iter()

@@ -1,3 +1,4 @@
+use crate::errors::{AnalysisError, AnalysisResult};
 use syn::Item;
 
 /// Represents a span of lines that contain a function
@@ -7,9 +8,13 @@ pub struct FunctionSpan {
 }
 
 /// Extracts function spans from source code using syn parser
-pub fn extract_function_spans(source: &str) -> Vec<FunctionSpan> {
+pub fn extract_function_spans(source: &str) -> AnalysisResult<Vec<FunctionSpan>> {
     let lines: Vec<&str> = source.lines().collect();
-    let parsed = syn::parse_file(source).expect("parse failed");
+    let parsed = syn::parse_file(source).map_err(|e| {
+        AnalysisError::Io(std::io::Error::other(format!(
+            "Failed to parse Rust source: {e}"
+        )))
+    })?;
 
     let mut spans = Vec::new();
 
@@ -26,7 +31,7 @@ pub fn extract_function_spans(source: &str) -> Vec<FunctionSpan> {
         }
     }
 
-    spans
+    Ok(spans)
 }
 
 /// Finds the start and end line indices of a function by name
