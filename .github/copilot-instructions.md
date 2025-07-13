@@ -1,6 +1,6 @@
-# GitHub Copilot Instructions for CallGraphGenerator
+# GitHub Copilot Instructions for Fnloc
 
-This document contains coding guidelines and conventions for the CallGraphGenerator project to ensure consistency across all contributions.
+This document contains coding guidelines and conventions for the Fnloc project to ensure consistency across all contributions.
 
 ## Language and Documentation Standards
 
@@ -16,44 +16,6 @@ This document contains coding guidelines and conventions for the CallGraphGenera
 - Rust documentation comments (`///` and `//!`) must be in English
 - README files, documentation, and all markdown files should be in English
 - API documentation should follow Rust documentation standards in English
-
-### Examples
-
-#### ✅ Correct (English)
-```rust
-/// Represents a call graph node containing function information
-pub struct CallGraphNode {
-    /// The function name
-    pub function_name: String,
-    /// List of functions called by this function
-    pub called_functions: Vec<String>,
-    /// The module path where this function is defined
-    pub module_path: String,
-}
-
-/// Builds a call graph from LSP analysis results
-pub fn build_call_graph(analysis_result: &AnalysisResult) -> CallGraph {
-    // Process the analysis result and create nodes
-    let mut graph = CallGraph::new();
-    // ... implementation
-}
-```
-
-#### ❌ Incorrect (Japanese/Mixed)
-```rust
-/// コールグラフのノードを表す構造体
-pub struct CallGraphNode {
-    /// 関数名
-    pub kansu_mei: String,  // Wrong: Japanese romanization
-    /// この関数が呼び出す関数のリスト
-    pub called_functions: Vec<String>,
-}
-
-/// LSP解析結果からコールグラフを構築する
-pub fn build_call_graph(kaiseki_kekka: &AnalysisResult) -> CallGraph {
-    // 解析結果を処理してノードを作成 - Wrong: Japanese comment
-}
-```
 
 ## Coding Conventions
 
@@ -81,11 +43,20 @@ pub fn build_call_graph(kaiseki_kekka: &AnalysisResult) -> CallGraph {
 - Ensure each increment builds and passes tests before moving to the next
 - Prefer working, simple implementations over complex, incomplete ones
 
+### Code Volume Guidelines
+- **NEVER implement large amounts of code in a single change**
+- Limit individual code changes to approximately 50-100 lines maximum
+- Break down complex features into smaller, manageable pieces
+- If a task requires more than 100 lines of code, split it into multiple steps
+- Each step should represent a complete, testable unit of functionality
+- Always prioritize incremental progress over comprehensive solutions
+
 ### Implementation Strategy
 - Start with basic functionality and gradually add complexity
 - Implement placeholder functions that return meaningful defaults
 - Add TODO comments for future enhancements
 - Maintain a working build at each step
+- Create minimal viable implementations first, then iterate and improve
 
 ### Testing-Driven Development
 - Write tests alongside implementation, not as an afterthought
@@ -180,6 +151,18 @@ pub fn build_call_graph(kaiseki_kekka: &AnalysisResult) -> CallGraph {
   - `Fix clippy warnings by deriving Default for ConfigFile`
   - `Implement basic DOT file generation with placeholder content`
 
+### Incremental Commit Strategy
+- **Commit small, focused changes frequently**
+- Each commit should represent a single logical unit of work
+- Prefer multiple small commits over one large commit
+- Ensure each commit builds and passes tests independently
+- Use commit messages that clearly describe the incremental progress
+- Examples of incremental commits:
+  - `Add basic struct definition for ConfigFile`
+  - `Implement ConfigFile::new() constructor with defaults`
+  - `Add ConfigFile::load() method with error handling`
+  - `Add tests for ConfigFile creation and loading`
+
 ### Branch Naming
 - Use descriptive branch names in English
 - Follow pattern: `feature/description` or `fix/description`
@@ -214,4 +197,4 @@ pub fn build_call_graph(kaiseki_kekka: &AnalysisResult) -> CallGraph {
 - Provide troubleshooting information
 - Include performance characteristics when relevant
 
-This instruction file ensures that all contributors maintain consistency in language, style, and quality throughout the CallGraphGenerator project.
+This instruction file ensures that all contributors maintain consistency in language, style, and quality throughout the Fnloc project.
