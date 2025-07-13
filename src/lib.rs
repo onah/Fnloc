@@ -29,12 +29,6 @@ fn normalize_path(path: &str) -> String {
         .collect::<Vec<_>>()
         .join("/")
 }
-
-/// Reads a Rust file and returns its content as a string
-pub fn read_rust_file(path: &str) -> String {
-    fs::read_to_string(path).expect("Failed to read file")
-}
-
 /// Runs the function analysis for all Rust files in the configured directory
 pub fn run_analysis(cli: &Client) {
     let formatter = OutputFormatter::with_format(cli.format.clone());
