@@ -30,16 +30,10 @@ fn normalize_path(path: &str) -> String {
         .join("/")
 }
 /// Runs the function analysis for all Rust files in the configured directory
-pub fn run_analysis(cli: &Client) {
+pub fn run_analysis(cli: &Client) -> AnalysisResult<()> {
     let formatter = OutputFormatter::with_format(cli.format.clone());
 
-    let files = match find_rust_files(&cli.directory) {
-        Ok(files) => files,
-        Err(e) => {
-            eprintln!("Error: {e}");
-            std::process::exit(1);
-        }
-    };
+    let files = find_rust_files(&cli.directory)?;
 
     formatter.display_analysis_header(files.len());
 
@@ -48,6 +42,8 @@ pub fn run_analysis(cli: &Client) {
 
     // Display results (sorted by code lines descending - default behavior)
     formatter.display_results_sorted_by_code(&all_results);
+
+    Ok(())
 }
 
 /// Analyzes all functions in a Rust file and returns analysis results
